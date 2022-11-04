@@ -1,0 +1,264 @@
+<html>
+
+<head>
+    <title></title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="title-bar">
+        <span class="title">Screentime</span>
+    </div>
+    <div class="game">
+        <div class="movie-card">
+            <div class="score-counter" id="score-counter">
+                0
+            </div>
+            <div class="movie-title">Star Wars, 1977</div>
+            <div class="movie-splash"></div>
+        </div>
+        <div class="sorted-character-list insertable-list" id="character-list">
+
+        </div>
+        <div class="character-pool" id="unsorted-pool">
+        </div>
+    </div>
+    <script>
+        function allowDrop(event) {
+            event.preventDefault()
+        }
+
+        function dragEnterInsertionBox(event) {
+            event.target.classList.add('insertion-box-extended')
+        }
+
+        function dragLeaveInsertionBox(event) {
+            event.target.classList.remove('insertion-box-extended')
+        }
+
+        function dropOnInsertionHandler(event, index) {
+            const characterId = event.dataTransfer.getData('charId')
+            const poolIndex = event.dataTransfer.getData('poolIndex')
+
+            const character = gameList[characterId]
+
+            sortedListData.splice(index, 0, {
+                id: characterId,
+                itemName: character.name,
+                itemValue: character.screentime,
+                correct: false
+            })
+
+            var correctUp = true
+
+            for (let i = index - 1; i >= 0; i--) {
+                if (sortedListData[i].correct && mmssToSeconds(gameList[sortedListData[i].id].screentime) < mmssToSeconds(character.screentime)) {
+                    correctUp = false
+                }
+            }
+
+            var correctDown = true
+
+            for (let i = index + 1; i < sortedListData.length; i++) {
+                if (sortedListData[i].correct && mmssToSeconds(gameList[sortedListData[i].id].screentime) > mmssToSeconds(character.screentime)) {
+                    correctDown = false
+                }
+            }
+
+            sortedListData[index].correct = correctUp && correctDown
+
+            if (correctUp && correctDown) {
+                incrementScore(1)
+            }
+
+            unsortedPool.splice(poolIndex, 1)
+
+            localStorage.setItem('sortedList', JSON.stringify(sortedListData))
+            localStorage.setItem('unsortedPool', JSON.stringify(unsortedPool))
+
+            renderList(sortedListData)
+            renderPool(unsortedPool)
+        }
+
+        function mmssToSeconds(string) {
+            const array = string.split(':')
+            const minutes = +array[0]
+            const seconds = +array[1]
+            return 60 * minutes + seconds
+        }
+
+        function shuffle(array) {
+            for (var i = array.length - 1; i > 0; i--) {
+                var j = Math.floor(Math.random() * (i + 1));
+                var temp = array[i];
+                array[i] = array[j];
+                array[j] = temp;
+            }
+        }
+
+        function startDraggingCharacter(event, characterId, index) {
+            event.dataTransfer.setData('charId', characterId)
+            event.dataTransfer.setData('poolIndex', index)
+        }
+
+        const gameList = {
+            0: {
+                name: "Luke Skywalker",
+                screentime: "37:30",
+            },
+            1: {
+                name: "Han Solo",
+                screentime: "19:30",
+            },
+            2: {
+                name: "C-3PO",
+                screentime: "19:15",
+            },
+            3: {
+                name: "R2-D2",
+                screentime: "18:00",
+            },
+            4: {
+                name: "Obi-Wan Kenobi",
+                screentime: "17:30",
+            },
+            5: {
+                name: "Princess Leia Organa",
+                screentime: "13:30",
+            },
+            6: {
+                name: "Chewbacca",
+                screentime: "11:00",
+            },
+            7: {
+                name: "Darth Vader",
+                screentime: "9:15",
+                baseline: true
+            },
+            8: {
+                name: "Grand Moff Tarkin",
+                screentime: "5:30",
+            },
+            9: {
+                name: "Owen Lars",
+                screentime: "3:15",
+            },
+            10: {
+                name: "Beru Lars",
+                screentime: "1:45",
+            },
+            11: {
+                name: "General Dodonna",
+                screentime: "1:30",
+            },
+            12: {
+                name: "Biggs Darklighter",
+                screentime: "1:00",
+            },
+            13: {
+                name: "Wedge Antilles",
+                screentime: "0:45",
+            },
+        }
+
+        var unsortedPool = JSON.parse(localStorage.getItem('unsortedPool')) ?? []
+
+        var sortedListData = JSON.parse(localStorage.getItem('sortedList')) ?? []
+
+        var score = +localStorage.getItem('score') ?? 0
+
+        var gameCached = localStorage.getItem('gameCached') ?? false
+
+        if (!gameCached) {
+            for (const [key, value] of Object.entries(gameList)) {
+                if (value.baseline) {
+                    sortedListData.push({
+                        id: key,
+                        itemName: value.name,
+                        itemValue: value.screentime,
+                        correct: true
+                    })
+                } else {
+                    unsortedPool.push({
+                       id: key,
+                       name: value.name,
+                       screentime: value.screentime
+                   })
+                }
+            }
+
+            shuffle(unsortedPool)
+
+            gameCached = true
+            localStorage.setItem('sortedList', JSON.stringify(sortedListData))
+            localStorage.setItem('unsortedPool', JSON.stringify(unsortedPool))
+            localStorage.setItem('score', 0)
+            localStorage.setItem('gameCached', true)
+        }
+
+        function incrementScore(amount) {
+            score += amount
+            document.getElementById('score-counter').innerHTML = score
+            localStorage.setItem('score', score)
+        }
+
+        function renderList(list) {
+            let htmlString = ''
+
+            if (list[0].correct) {
+                htmlString = `
+                <div 
+                    class="insertion-box"
+                    ondrop="dropOnInsertionHandler(event, 0)"
+                    ondragenter="dragEnterInsertionBox(event)"
+                    ondragleave="dragLeaveInsertionBox(event)"
+                    ondragover="allowDrop(event)"
+                ></div>
+            `
+            }
+
+            list.forEach((element, index) => {
+                        htmlString += `
+                <div class="character character-inserted ${element.correct ? "" : "inserted-wrong"}">
+                    ${element.itemName}
+                    <div class="character-status-box">
+                        <div class="character-screentime-value">${element.itemValue}</div>
+                        <div class="character-screentime-status character-screentime-status-${element.correct ? "correct" : "wrong"}">${element.correct ? "✓" : "×"}</div>
+                    </div>
+                </div>
+                ${index == sortedListData.length - 1 || sortedListData[index + 1].correct ? `
+                    <div 
+                    class="insertion-box"
+                    ondrop="dropOnInsertionHandler(event, ${index + 1})"
+                    ondragenter="dragEnterInsertionBox(event)"
+                    ondragleave="dragLeaveInsertionBox(event)"
+                    ondragover="allowDrop(event)"
+                ></div>` : ``}
+                `
+            })
+            document.getElementById('character-list').innerHTML = htmlString
+        }
+
+        function renderPool(pool) {
+            let poolString = ''
+            pool.forEach((element, index) => {
+                poolString += `
+                    <div class="character" draggable="true" ondragstart="startDraggingCharacter(event, ${element.id}, ${index})">
+                        ${element.name}
+                    </div>
+                `
+            })
+            document.getElementById('unsorted-pool').innerHTML = poolString;
+        }
+
+        renderList(sortedListData)
+        renderPool(unsortedPool)
+        document.getElementById('score-counter').innerHTML = score
+    </script>
+</body>
+
+</html>
