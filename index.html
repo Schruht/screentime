@@ -7,6 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
 </head>
 
 <body>
@@ -18,8 +20,8 @@
             <div class="score-counter" id="score-counter">
                 0
             </div>
-            <div class="movie-title">Star Wars, 1977</div>
-            <div class="movie-splash"></div>
+            <div class="movie-title" id="movie-title">Star Wars, 1977</div>
+            <div class="movie-splash" id="movie-splash"></div>
         </div>
         <div class="sorted-character-list insertable-list" id="character-list">
 
@@ -77,8 +79,10 @@
 
             unsortedPool.splice(poolIndex, 1)
 
-            localStorage.setItem('sortedList', JSON.stringify(sortedListData))
-            localStorage.setItem('unsortedPool', JSON.stringify(unsortedPool))
+            saveState[selectedDay].unsortedPool = unsortedPool
+            saveState[selectedDay].sortedListData = sortedListData
+
+            localStorage.setItem('saveState', JSON.stringify(saveState))
 
             renderList(sortedListData)
             renderPool(unsortedPool)
@@ -105,105 +109,11 @@
             event.dataTransfer.setData('poolIndex', index)
         }
 
-        const gameList = {
-            0: {
-                name: "Luke Skywalker",
-                screentime: "37:30",
-            },
-            1: {
-                name: "Han Solo",
-                screentime: "19:30",
-            },
-            2: {
-                name: "C-3PO",
-                screentime: "19:15",
-            },
-            3: {
-                name: "R2-D2",
-                screentime: "18:00",
-            },
-            4: {
-                name: "Obi-Wan Kenobi",
-                screentime: "17:30",
-            },
-            5: {
-                name: "Princess Leia Organa",
-                screentime: "13:30",
-            },
-            6: {
-                name: "Chewbacca",
-                screentime: "11:00",
-            },
-            7: {
-                name: "Darth Vader",
-                screentime: "9:15",
-                baseline: true
-            },
-            8: {
-                name: "Grand Moff Tarkin",
-                screentime: "5:30",
-            },
-            9: {
-                name: "Owen Lars",
-                screentime: "3:15",
-            },
-            10: {
-                name: "Beru Lars",
-                screentime: "1:45",
-            },
-            11: {
-                name: "General Dodonna",
-                screentime: "1:30",
-            },
-            12: {
-                name: "Biggs Darklighter",
-                screentime: "1:00",
-            },
-            13: {
-                name: "Wedge Antilles",
-                screentime: "0:45",
-            },
-        }
-
-        var unsortedPool = JSON.parse(localStorage.getItem('unsortedPool')) ?? []
-
-        var sortedListData = JSON.parse(localStorage.getItem('sortedList')) ?? []
-
-        var score = +localStorage.getItem('score') ?? 0
-
-        var gameCached = localStorage.getItem('gameCached') ?? false
-
-        if (!gameCached) {
-            for (const [key, value] of Object.entries(gameList)) {
-                if (value.baseline) {
-                    sortedListData.push({
-                        id: key,
-                        itemName: value.name,
-                        itemValue: value.screentime,
-                        correct: true
-                    })
-                } else {
-                    unsortedPool.push({
-                       id: key,
-                       name: value.name,
-                       screentime: value.screentime
-                   })
-                }
-            }
-
-            shuffle(unsortedPool)
-
-            gameCached = true
-            localStorage.setItem('sortedList', JSON.stringify(sortedListData))
-            localStorage.setItem('unsortedPool', JSON.stringify(unsortedPool))
-            localStorage.setItem('score', 0)
-            localStorage.setItem('gameCached', true)
-        }
-
         function incrementScore(amount) {
             score += amount
             document.getElementById('score-counter').innerHTML = score
-            localStorage.setItem('score', score)
+            saveState[selectedDay].score += amount;
+            localStorage.setItem('saveState', JSON.stringify(saveState))
         }
 
         function renderList(list) {
@@ -222,7 +132,7 @@
             }
 
             list.forEach((element, index) => {
-                        htmlString += `
+                htmlString += `
                 <div class="character character-inserted ${element.correct ? "" : "inserted-wrong"}">
                     ${element.itemName}
                     <div class="character-status-box">
@@ -255,9 +165,77 @@
             document.getElementById('unsorted-pool').innerHTML = poolString;
         }
 
-        renderList(sortedListData)
-        renderPool(unsortedPool)
-        document.getElementById('score-counter').innerHTML = score
+        var unsortedPool = []
+
+        var sortedListData = []
+
+        var score = 0
+
+        var saveState
+
+        var gameList
+
+        var selectedDay
+
+        function onLoad() {
+            const today = new Date()
+            const baseDate = new Date('11/04/2022')
+            const currentDay = Math.floor((today.getTime() - baseDate.getTime()) / 86400000)
+
+            console.log(currentDay)
+
+            startGameForDay(currentDay)
+        }
+
+        function startGameForDay(day) {
+
+            saveState = JSON.parse(localStorage.getItem('saveState')) ?? {}
+            selectedDay = day
+
+            $.getJSON('./data.json', (json) => {
+                gameList = json.days[day].list
+                document.getElementById('movie-title').innerHTML = json.days[day].title
+                document.getElementById('movie-splash').style = `background-image:url(${json.days[day].splash})`
+                if (saveState[day]) {
+                    unsortedPool = saveState[day].unsortedPool
+                    sortedListData = saveState[day].sortedListData
+                    score = saveState[day].score
+                } else {
+                    for (const [key, value] of Object.entries(gameList)) {
+                        if (value.baseline) {
+                            sortedListData.push({
+                                id: key,
+                                itemName: value.name,
+                                itemValue: value.screentime,
+                                correct: true
+                            })
+                        } else {
+                            unsortedPool.push({
+                                id: key,
+                                name: value.name,
+                                screentime: value.screentime
+                            })
+                        }
+                    }
+
+                    saveState[day] = {
+                        unsortedPool: unsortedPool,
+                        sortedListData: sortedListData,
+                        score: score
+                    }
+
+                    localStorage.setItem("saveState", JSON.stringify(saveState))
+                }
+
+                shuffle(unsortedPool)
+
+                renderList(sortedListData)
+                renderPool(unsortedPool)
+                document.getElementById('score-counter').innerHTML = score
+            })
+        }
+
+        $(document).ready(onLoad)
     </script>
 </body>
 

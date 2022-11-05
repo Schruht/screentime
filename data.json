@@ -1,0 +1,114 @@
+{
+    "days": [
+        {
+            "title": "Star Wars (1977)",
+            "splash": "https://th.bing.com/th/id/R.7ca7fc261231a2c6a03416d5875a9c16?rik=cGz6ZMnXcGZH5Q&riu=http%3a%2f%2fimg2.wikia.nocookie.net%2f__cb20130228054320%2fstarwars%2fimages%2f9%2f92%2fLukesaberanh.png&ehk=FtyRLJApA15weoePdxChBqxb7PkPM0Gd1Aqr6Nk6D6k%3d&risl=&pid=ImgRaw&r=0",
+            "list": {
+                "0": {
+                    "name": "Luke Skywalker",
+                    "screentime": "37:30"
+                },
+                "1": {
+                    "name": "Han Solo",
+                    "screentime": "19:30"
+                },
+                "2": {
+                    "name": "C-3PO",
+                    "screentime": "19:15"
+                },
+                "3": {
+                    "name": "R2-D2",
+                    "screentime": "18:00"
+                },
+                "4": {
+                    "name": "Obi-Wan Kenobi",
+                    "screentime": "17:30"
+                },
+                "5": {
+                    "name": "Princess Leia Organa",
+                    "screentime": "13:30"
+                },
+                "6": {
+                    "name": "Chewbacca",
+                    "screentime": "11:00"
+                },
+                "7": {
+                    "name": "Darth Vader",
+                    "screentime": "9:15",
+                    "baseline": true
+                },
+                "8": {
+                    "name": "Grand Moff Tarkin",
+                    "screentime": "5:30"
+                },
+                "9": {
+                    "name": "Owen Lars",
+                    "screentime": "3:15"
+                },
+                "10": {
+                    "name": "Beru Lars",
+                    "screentime": "1:45"
+                },
+                "11": {
+                    "name": "General Dodonna",
+                    "screentime": "1:30"
+                },
+                "12": {
+                    "name": "Biggs Darklighter",
+                    "screentime": "1:00"
+                },
+                "13": {
+                    "name": "Wedge Antilles",
+                    "screentime": "0:45"
+                }
+            }
+        },
+        {
+            "title": "Batman Begins (2005)",
+            "splash": "https://static1.cbrimages.com/wordpress/wp-content/uploads/2020/10/batman-begins.jpg",
+            "list": {
+                "0": {
+                    "name": "Bruce Wayne / Batman",
+                    "screentime": "66:30"
+                },
+                "1": {
+                    "name": "Ra's Al Ghul",
+                    "screentime": "20:30"
+                },
+                "2": {
+                    "name": "Rachel Dawes",
+                    "screentime": "17:00"
+                },
+                "3": {
+                    "name": "Alfred",
+                    "screentime": "10:30"
+                },
+                "4": {
+                    "name": "Jim Gordon",
+                    "screentime": "9:00"
+                },
+                "5": {
+                    "name": "Dr. Jonathan Crane / Scarecrow",
+                    "screentime": "7:45",
+                    "baseline": true
+                },
+                "6": {
+                    "name": "Lucius Fox",
+                    "screentime": "6:00"
+                },
+                "7": {
+                    "name": "Carmine Falcone",
+                    "screentime": "5:30"
+                },
+                "8": {
+                    "name": "Flass",
+                    "screentime": "4:15"
+                },
+                "9": {
+                    "name": "Thomas Wayne",
+                    "screentime": "3:30"
+                }
+            }
+        }
+    ]
+}
